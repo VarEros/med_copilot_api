@@ -1,7 +1,7 @@
 from flask import jsonify, request
 from flask_restful import Resource
+from flask_jwt_extended import create_access_token
 from app.models import db, User
-from datetime import datetime
 import pytz
 
 class UserResource(Resource):
@@ -48,5 +48,7 @@ class AuthResource(Resource):
         # Buscar al usuario
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
-            return {"message": "Usuario autenticado exito", "id": user.id}, 200
+            
+            access_token = create_access_token(identity=user.id)
+            return {"user_id": user.id, "access_token": access_token}, 200
         return {"message": "Credenciales invalidas"}, 401

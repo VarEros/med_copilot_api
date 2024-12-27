@@ -5,7 +5,7 @@ from datetime import datetime
 import pytz
 
 class PatientResource(Resource):
-    def get(self, patient_id=None):
+    def get(self, patient_id=None, user_id=None):
         if patient_id:
             patient = Patient.query.get_or_404(patient_id)
             return jsonify({
@@ -18,6 +18,18 @@ class PatientResource(Resource):
                 "phone": patient.phone,
                 "follow_up": patient.follow_up
             })
+        elif user_id:
+            patients = Patient.query.filter_by(user_id=user_id).all()
+            return jsonify([{
+                "id": patient.id,
+                "personal_id": patient.personal_id,
+                "name": patient.name,
+                "lastname": patient.lastname,
+                "birthdate": format_iso8601(patient.birthdate),
+                "email": patient.email,
+                "phone": patient.phone,
+                "follow_up": patient.follow_up
+            } for patient in patients])
         else:
             patients = Patient.query.all()
             return jsonify([{
@@ -28,7 +40,8 @@ class PatientResource(Resource):
                 "birthdate": format_iso8601(patient.birthdate),
                 "email": patient.email,
                 "phone": patient.phone,
-                "follow_up": patient.follow_up
+                "follow_up": patient.follow_up,
+                "user_id": patient.user_id
             } for patient in patients])
 
     def post(self):
@@ -40,7 +53,8 @@ class PatientResource(Resource):
             birthdate=parse_iso8601(data['birthdate']),
             email=data.get('email'),
             phone=data.get('phone'),
-            follow_up=data['follow_up']
+            follow_up=data['follow_up'],
+            user_id=data['user_id']
         )
         db.session.add(patient)
         db.session.commit()
@@ -57,6 +71,7 @@ class PatientResource(Resource):
         patient.email = data.get('email', patient.email)
         patient.phone = data.get('phone', patient.phone)
         patient.follow_up = data.get('follow_up', patient.follow_up)
+        patient.user_id = data.get('user_id', patient.user_id)
         
         db.session.commit()
         return jsonify({"message": "Patient updated", "id": patient.id})

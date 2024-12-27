@@ -1,11 +1,11 @@
 from flask import jsonify, request
 from flask_restful import Resource
-from app.models import db, Consultation
+from app.models import Patient, db, Consultation
 from datetime import datetime
 import pytz
 
 class ConsultationResource(Resource):
-    def get(self, consultation_id=None, patient_id=None):
+    def get(self, consultation_id=None, patient_id=None, user_id=None):
         if consultation_id:
             # Obtener la consulta específica
             consultation = Consultation.query.get_or_404(consultation_id)
@@ -28,39 +28,26 @@ class ConsultationResource(Resource):
         elif patient_id:
             # Obtener todas las consultas para un paciente específico
             consultations = Consultation.query.filter_by(patient_id=patient_id).all()
-            return jsonify([{
-                "id": consultation.id,
-                "description": consultation.description,
-                "registration_date": format_iso8601(consultation.registration_date),
-                "patient": {
-                    "id": consultation.patient.id,
-                    "personal_id": consultation.patient.personal_id,
-                    "name": consultation.patient.name,
-                    "lastname": consultation.patient.lastname,
-                    "birthdate": format_iso8601(consultation.patient.birthdate),
-                    "email": consultation.patient.email,
-                    "phone": consultation.patient.phone,
-                    "follow_up": consultation.patient.follow_up
-                }
-            } for consultation in consultations])
+        elif user_id:
+            consultations = Consultation.query.join(Patient).filter(Patient.user_id == user_id).all();
         else:
             # Obtener todas las consultas
             consultations = Consultation.query.all()
-            return jsonify([{
-                "id": consultation.id,
-                "description": consultation.description,
-                "registration_date": format_iso8601(consultation.registration_date),
-                "patient": {
-                    "id": consultation.patient.id,
-                    "personal_id": consultation.patient.personal_id,
-                    "name": consultation.patient.name,
-                    "lastname": consultation.patient.lastname,
-                    "birthdate": format_iso8601(consultation.patient.birthdate),
-                    "email": consultation.patient.email,
-                    "phone": consultation.patient.phone,
-                    "follow_up": consultation.patient.follow_up
-                }
-            } for consultation in consultations])
+        return jsonify([{
+            "id": consultation.id,
+            "description": consultation.description,
+            "registration_date": format_iso8601(consultation.registration_date),
+            "patient": {
+                "id": consultation.patient.id,
+                "personal_id": consultation.patient.personal_id,
+                "name": consultation.patient.name,
+                "lastname": consultation.patient.lastname,
+                "birthdate": format_iso8601(consultation.patient.birthdate),
+                "email": consultation.patient.email,
+                "phone": consultation.patient.phone,
+                "follow_up": consultation.patient.follow_up
+            }
+        } for consultation in consultations])
 
     def post(self):
         data = request.json
