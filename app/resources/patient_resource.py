@@ -2,9 +2,11 @@ from flask import jsonify, request
 from flask_restful import Resource
 from app.models import db, Patient
 from datetime import datetime
+from flask_jwt_extended import jwt_required
 import pytz
 
 class PatientResource(Resource):
+    @jwt_required()
     def get(self, patient_id=None, user_id=None):
         if patient_id:
             patient = Patient.query.get_or_404(patient_id)
@@ -44,6 +46,7 @@ class PatientResource(Resource):
                 "user_id": patient.user_id
             } for patient in patients])
 
+    @jwt_required()
     def post(self):
         data = request.json
         patient = Patient(
@@ -60,6 +63,7 @@ class PatientResource(Resource):
         db.session.commit()
         return jsonify({"message": "Patient created", "id": patient.id})
 
+    @jwt_required()
     def put(self, patient_id):
         data = request.json
         patient = Patient.query.get_or_404(patient_id)
@@ -76,6 +80,7 @@ class PatientResource(Resource):
         db.session.commit()
         return jsonify({"message": "Patient updated", "id": patient.id})
 
+    @jwt_required()
     def delete(self, patient_id):
         patient = Patient.query.get_or_404(patient_id)
         db.session.delete(patient)

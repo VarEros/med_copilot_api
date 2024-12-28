@@ -1,10 +1,12 @@
 from flask import jsonify, request
+from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 from app.models import Patient, db, Consultation
 from datetime import datetime
 import pytz
 
 class ConsultationResource(Resource):
+    @jwt_required()
     def get(self, consultation_id=None, patient_id=None, user_id=None):
         if consultation_id:
             # Obtener la consulta específica
@@ -49,6 +51,7 @@ class ConsultationResource(Resource):
             }
         } for consultation in consultations])
 
+    @jwt_required()
     def post(self):
         data = request.json
         consultation = Consultation(
@@ -59,6 +62,7 @@ class ConsultationResource(Resource):
         db.session.commit()
         return jsonify({"message": "Consultation created", "id": consultation.id})
 
+    @jwt_required()
     def put(self, consultation_id):
         data = request.json
         consultation = Consultation.query.get_or_404(consultation_id)
@@ -69,6 +73,7 @@ class ConsultationResource(Resource):
         db.session.commit()
         return jsonify({"message": "Consultation updated", "id": consultation.id})
 
+    @jwt_required()
     def delete(self, consultation_id):
         consultation = Consultation.query.get_or_404(consultation_id)
         db.session.delete(consultation)
