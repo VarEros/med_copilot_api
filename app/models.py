@@ -1,4 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.mysql import TINYINT
+
 from hashlib import sha256
 
 db = SQLAlchemy()
@@ -33,6 +35,25 @@ class Patient(db.Model):
 class Consultation(db.Model):
     __tablename__ = 'consultations'
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    origin = db.Column(TINYINT, nullable=False)
+    service = db.Column(TINYINT, nullable=False)
+    status = db.Column(TINYINT, nullable=False)
+    programed_date = db.Column(db.DateTime, nullable=True)
     registration_date = db.Column(db.DateTime, nullable=True)
+    duration = db.Column(db.Integer, nullable=True)
+    details_id = db.Column(db.Integer, db.ForeignKey('consultation_details.id'), nullable=False)
     patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+
+class ConsultationDetails(db.Model):
+    __tablename__ = 'consultation_details'
+    id = db.Column(db.Integer, primary_key=True)
+    weight = db.Column(TINYINT(unsigned=True), nullable=True)
+    height = db.Column(TINYINT(unsigned=True), nullable=True)
+    temperature = db.Column(TINYINT, nullable=True)
+    systolic_pressure = db.Column(TINYINT(unsigned=True), nullable=True)
+    diastolic_pressure = db.Column(TINYINT(unsigned=True), nullable=True)
+    heart_rate = db.Column(TINYINT(unsigned=True), nullable=True)
+    symptoms = db.Column(db.Text, nullable=False)
+    diagnosis = db.Column(db.Text, nullable=False)
+    treatment = db.Column(db.Text, nullable=False)
